@@ -81,7 +81,7 @@ class Network(object):
         return '%s_%d'%(prefix, id)
 
     def make_var(self, name, shape, initializer=None, trainable=True, regularizer=None):
-        return tf.get_variable(name, shape, initializer=initializer, trainable=trainable, regularizer=regularizer)
+        return tf.compat.v1.get_variable(name, shape, initializer=initializer, trainable=trainable, regularizer=regularizer)
 
     def validate_padding(self, padding):
         assert padding in ('SAME', 'VALID')
@@ -90,7 +90,7 @@ class Network(object):
     @layer
     def Bilstm(self, input, d_i, d_h, d_o, name, trainable=True):
         img = input
-        with tf.variable_scope(name) as scope:
+        with tf.compat.v1.variable_scope(name) as scope:
             shape = tf.shape(img)
             N, H, W, C = shape[0], shape[1], shape[2], shape[3]
             img = tf.reshape(img, [N * H, W, C])
@@ -145,7 +145,7 @@ class Network(object):
 
     @layer
     def lstm_fc(self, input, d_i, d_o, name, trainable=True):
-        with tf.variable_scope(name) as scope:
+        with tf.compat.v1.variable_scope(name) as scope:
             shape = tf.shape(input)
             N, H, W, C = shape[0], shape[1], shape[2], shape[3]
             input = tf.reshape(input, [N*H*W,C])
@@ -165,7 +165,7 @@ class Network(object):
         self.validate_padding(padding)
         c_i = input.get_shape()[-1]
         convolve = lambda i, k: tf.nn.conv2d(i, k, [1, s_h, s_w, 1], padding=padding)
-        with tf.variable_scope(name) as scope:
+        with tf.compat.v1.variable_scope(name) as scope:
 
             init_weights = tf.truncated_normal_initializer(0.0, stddev=0.01)
             init_biases = tf.constant_initializer(0.0)
@@ -191,7 +191,7 @@ class Network(object):
     @layer
     def max_pool(self, input, k_h, k_w, s_h, s_w, name, padding=DEFAULT_PADDING):
         self.validate_padding(padding)
-        return tf.nn.max_pool(input,
+        return tf.nn.max_pool2d(input,
                               ksize=[1, k_h, k_w, 1],
                               strides=[1, s_h, s_w, 1],
                               padding=padding,
